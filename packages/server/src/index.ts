@@ -253,6 +253,6 @@ io.on("connection", (socket) => {
 
 // ── Start server ──
 
-httpServer.listen(PORT, () => {
-  console.log(`🃏 PLUCK multiplayer server running on port ${PORT}`);
+httpServer.listen(PORT, "0.0.0.0", () => {
+  console.log(`🃏 PLUCK multiplayer server running on 0.0.0.0:${PORT}`);
 });
