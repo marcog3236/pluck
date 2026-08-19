@@ -12,7 +12,7 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages/engine/ packages/engine/
 COPY packages/server/ packages/server/
 
-# Install dependencies (no frozen-lockfile since client is excluded)
+# Install dependencies
 RUN pnpm install --no-frozen-lockfile
 
 # Build engine first, then server
@@ -28,9 +28,11 @@ WORKDIR /app
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages/engine/package.json packages/engine/
-COPY packages/engine/dist/ packages/engine/dist/
 COPY packages/server/package.json packages/server/
-COPY packages/server/dist/ packages/server/dist/
+
+# Copy built artifacts FROM the builder stage
+COPY --from=builder /app/packages/engine/dist/ packages/engine/dist/
+COPY --from=builder /app/packages/server/dist/ packages/server/dist/
 
 RUN pnpm install --no-frozen-lockfile --prod
 
