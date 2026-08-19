@@ -1,0 +1,4 @@
+{
+  "installCommand": "cd ../.. && pnpm install && pnpm --filter @pluck/engine build && cd packages/client",
+  "buildCommand": "next build"
+}
