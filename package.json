@@ -1,0 +1,19 @@
+{
+  "name": "pluck",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "engine:test": "pnpm --filter @pluck/engine test",
+    "engine:build": "pnpm --filter @pluck/engine build",
+    "dev": "pnpm --filter @pluck/client dev",
+    "build": "pnpm -r build"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "socket.io-client": "^4.8.3"
+  }
+}
