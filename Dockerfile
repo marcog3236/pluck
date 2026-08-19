@@ -36,9 +36,6 @@ COPY --from=builder /app/packages/server/dist/ packages/server/dist/
 
 RUN pnpm install --no-frozen-lockfile --prod
 
-EXPOSE 3334
-
 ENV NODE_ENV=production
-ENV PORT=3334
 
 CMD ["node", "packages/server/dist/index.js"]
