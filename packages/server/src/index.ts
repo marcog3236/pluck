@@ -253,6 +253,15 @@ io.on("connection", (socket) => {
 
 // ── Start server ──
 
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught exception:", err);
+});
+
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled rejection:", err);
+});
+
 httpServer.listen(PORT, "0.0.0.0", () => {
-  console.log(`🃏 PLUCK multiplayer server running on 0.0.0.0:${PORT}`);
+  console.log(`PLUCK server listening on 0.0.0.0:${PORT}`);
+  console.log(`Health check: http://0.0.0.0:${PORT}/health`);
 });
