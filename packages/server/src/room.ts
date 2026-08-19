@@ -227,10 +227,9 @@ export class GameRoom {
       card,
     });
 
-    const hasError = events.some(e => e.type === "error");
-    if (hasError) {
-      const err = events.find(e => e.type === "error");
-      return { error: err?.type === "error" ? (err as any).message : "Invalid play" };
+    const errorEvent = events.find((e): e is Extract<GameEvent, { type: 'error' }> => e.type === "error");
+    if (errorEvent) {
+      return { error: (errorEvent as any).message ?? "Invalid play" };
     }
 
     this.emitEvents(events);
@@ -249,10 +248,9 @@ export class GameRoom {
       suit,
     });
 
-    const hasError = events.some(e => e.type === "error");
-    if (hasError) {
-      const err = events.find(e => e.type === "error");
-      return { error: err?.type === "error" ? (err as any).message : "Invalid action" };
+    const errorEvent = events.find((e): e is Extract<GameEvent, { type: 'error' }> => e.type === "error");
+    if (errorEvent) {
+      return { error: (errorEvent as any).message ?? "Invalid action" };
     }
 
     this.emitEvents(events);
@@ -271,10 +269,9 @@ export class GameRoom {
       card,
     });
 
-    const hasError = events.some(e => e.type === "error");
-    if (hasError) {
-      const err = events.find(e => e.type === "error");
-      return { error: err?.type === "error" ? (err as any).message : "Invalid action" };
+    const errorEvent = events.find((e): e is Extract<GameEvent, { type: 'error' }> => e.type === "error");
+    if (errorEvent) {
+      return { error: (errorEvent as any).message ?? "Invalid action" };
     }
 
     this.emitEvents(events);
