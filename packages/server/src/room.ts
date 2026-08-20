@@ -51,6 +51,7 @@ export class GameRoom {
   private started = false;
   private aiInstances: Map<string, ReturnType<typeof createAI>> = new Map();
   private turnTimer: ReturnType<typeof setTimeout> | null = null;
+  private lastTrickJustWon = false;
   private onEventCallback: ((roomId: string, events: GameEvent[], state: GameState) => void) | null = null;
   private onPlayerUpdateCallback: ((roomId: string, players: RoomPlayer[]) => void) | null = null;
 
@@ -88,6 +89,9 @@ export class GameRoom {
   }
 
   private emitEvents(events: GameEvent[]): void {
+    if (events.some(e => e.type === "trick-won")) {
+      this.lastTrickJustWon = true;
+    }
     this.onEventCallback?.(this.id, events, this.game.state);
   }
 
@@ -375,7 +379,10 @@ export class GameRoom {
 
     // AI players or disconnected players get AI moves
     if (player.isAI || !player.connected) {
-      setTimeout(() => this.runAITurn(currentPlayerId), 500);
+      // Check if a trick just completed — if so, delay so clients can see all cards
+      const delay = this.lastTrickJustWon ? 2000 : 600;
+      this.lastTrickJustWon = false;
+      setTimeout(() => this.runAITurn(currentPlayerId), delay);
     } else {
       // Start turn timer for human players
       this.startTurnTimer(currentPlayerId);

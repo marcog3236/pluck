@@ -23,6 +23,8 @@ export interface GameHandle {
   trumpSuit: string | null;
   trumpBroken: boolean;
   currentTrick: any;
+  /** The trick to display (may be the completed trick still showing) */
+  displayTrick: any;
   trickNumber: number;
   currentPlayerIndex: number;
   dealerIndex: number;
@@ -49,21 +51,29 @@ export interface GameHandle {
 export function useMultiplayerGame(client: MultiplayerClient): GameHandle | null {
   const [mpState, setMpState] = useState<MultiplayerState>(client.getState());
   const [trickWinner, setTrickWinner] = useState<string | null>(null);
+  const [completedTrick, setCompletedTrick] = useState<any>(null);
   const prevTrickRef = useRef<number>(-1);
+  const completedTrickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const unsub = client.onChange((state) => {
       setMpState(state);
 
-      // Detect trick winner from state changes
+      // Detect trick completion from server events
       if (state.gameState) {
-        const tn = state.gameState.trickNumber ?? 0;
-        if (tn > prevTrickRef.current && prevTrickRef.current >= 0) {
-          // A trick just completed — the last trick's winner isn't directly
-          // in the server state, but we can infer from trick count change
-          // For now, clear after a delay
-          setTrickWinner(null);
+        const lastTrick = state.gameState._lastCompletedTrick;
+        const lastWinner = state.gameState._trickWinnerId;
+        if (lastTrick && lastWinner) {
+          setCompletedTrick(lastTrick);
+          setTrickWinner(lastWinner);
+          if (completedTrickTimer.current) clearTimeout(completedTrickTimer.current);
+          completedTrickTimer.current = setTimeout(() => {
+            setCompletedTrick(null);
+            setTrickWinner(null);
+          }, 1800);
         }
+
+        const tn = state.gameState.trickNumber ?? 0;
         prevTrickRef.current = tn;
       }
     });
@@ -102,6 +112,9 @@ export function useMultiplayerGame(client: MultiplayerClient): GameHandle | null
   const scores: Record<string, number> = gs.scores ?? {};
   const tricksWon: Record<string, number> = gs.tricksWon ?? {};
 
+  const currentTrick = gs.currentTrick ?? { plays: [], ledSuit: null, winnerId: null };
+  const displayTrick = completedTrick ?? currentTrick;
+
   return {
     phase: gs.phase,
     players: gs.players,
@@ -111,7 +124,8 @@ export function useMultiplayerGame(client: MultiplayerClient): GameHandle | null
     myPlayerId,
     trumpSuit: gs.trumpSuit,
     trumpBroken: gs.trumpBroken,
-    currentTrick: gs.currentTrick ?? { plays: [], ledSuit: null, winnerId: null },
+    currentTrick,
+    displayTrick,
     trickNumber: gs.trickNumber ?? 0,
     currentPlayerIndex: gs.currentPlayerIndex ?? 0,
     dealerIndex: gs.dealerIndex ?? 0,

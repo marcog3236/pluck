@@ -22,7 +22,8 @@ export type GameEventHandler = (events: GameEvent[]) => void;
 export class GameController {
   game: PluckGame;
   private eventHandlers: GameEventHandler[] = [];
-  private aiDelay = 500; // ms between AI actions
+  private aiDelay = 600; // ms between AI actions
+  private trickWonDelay = 2000; // ms to show completed trick before next action
   private aiDifficulty: AIDifficulty = "medium";
   private aiInstances: Map<string, ReturnType<typeof createAI>> = new Map();
 
@@ -90,7 +91,8 @@ export class GameController {
       card,
     });
     this.emit(events);
-    this.scheduleAIActions();
+    const hadTrickWon = events.some(e => e.type === "trick-won");
+    this.scheduleAIActions(hadTrickWon ? this.trickWonDelay : undefined);
   }
 
   /** Human declares trump suit */
@@ -164,8 +166,8 @@ export class GameController {
 
   // ── AI Logic ──
 
-  private scheduleAIActions(): void {
-    setTimeout(() => this.processAIActions(), this.aiDelay);
+  private scheduleAIActions(delayOverride?: number): void {
+    setTimeout(() => this.processAIActions(), delayOverride ?? this.aiDelay);
   }
 
   private processAIActions(): void {
@@ -230,7 +232,8 @@ export class GameController {
           card,
         });
         this.emit(events);
-        this.scheduleAIActions();
+        const hadTrickWon = events.some(e => e.type === "trick-won");
+        this.scheduleAIActions(hadTrickWon ? this.trickWonDelay : undefined);
       }
       return;
     }

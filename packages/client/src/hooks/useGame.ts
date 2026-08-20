@@ -25,6 +25,8 @@ export function useGame(config: Partial<GameConfig> = {}): UseGameReturn {
   const [state, setState] = useState<GameState | null>(null);
   const [lastEvents, setLastEvents] = useState<GameEvent[]>([]);
   const [trickWinner, setTrickWinner] = useState<string | null>(null);
+  const [completedTrick, setCompletedTrick] = useState<any>(null);
+  const completedTrickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const getController = useCallback((difficulty?: AIDifficulty) => {
     if (!controllerRef.current) {
@@ -38,14 +40,23 @@ export function useGame(config: Partial<GameConfig> = {}): UseGameReturn {
     const ctrl = getController();
     const unsub = ctrl.onEvent((events) => {
       setLastEvents(events);
-      setState({ ...ctrl.state });
 
-      // Show trick winner briefly
+      // Capture trick-won: freeze the completed trick for display
       const trickWon = events.find((e) => e.type === "trick-won");
       if (trickWon && trickWon.type === "trick-won") {
+        // Save the completed trick BEFORE engine clears it
+        setCompletedTrick(trickWon.trick);
         setTrickWinner(trickWon.winnerId);
-        setTimeout(() => setTrickWinner(null), 1200);
+
+        // Clear after delay
+        if (completedTrickTimer.current) clearTimeout(completedTrickTimer.current);
+        completedTrickTimer.current = setTimeout(() => {
+          setCompletedTrick(null);
+          setTrickWinner(null);
+        }, 1800);
       }
+
+      setState({ ...ctrl.state });
     });
     return unsub;
   }, [getController]);
@@ -119,6 +130,8 @@ export function useGame(config: Partial<GameConfig> = {}): UseGameReturn {
   const isMyTurn = ctrl?.isHumanTurn() ?? false;
 
   // Build GameHandle from solo state for unified interface
+  const displayTrick = completedTrick ?? state?.currentTrick ?? { plays: [], ledSuit: null, winnerId: null };
+
   const handle: GameHandle | null = state ? {
     phase: state.phase,
     players: state.players,
@@ -129,6 +142,7 @@ export function useGame(config: Partial<GameConfig> = {}): UseGameReturn {
     trumpSuit: state.trumpSuit,
     trumpBroken: state.trumpBroken,
     currentTrick: state.currentTrick,
+    displayTrick,
     trickNumber: state.trickNumber,
     currentPlayerIndex: state.currentPlayerIndex,
     dealerIndex: state.dealerIndex,

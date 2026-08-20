@@ -144,6 +144,7 @@ export function GameTable({ multiplayerHandle, onBack }: GameTableProps) {
     currentPlayerIndex: h.currentPlayerIndex,
     trickNumber: h.trickNumber,
     currentTrick: h.currentTrick,
+    displayTrick: h.displayTrick,
     trumpSuit: h.trumpSuit,
     trumpBroken: h.trumpBroken,
     winnerId: h.winnerId,
@@ -229,7 +230,7 @@ export function GameTable({ multiplayerHandle, onBack }: GameTableProps) {
             </motion.div>
           ) : (
             <TrickArea
-              trick={h.currentTrick}
+              trick={h.displayTrick}
               players={h.players}
               trickWinner={h.trickWinner}
               trumpSuit={h.trumpSuit}

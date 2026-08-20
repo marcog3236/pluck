@@ -81,8 +81,15 @@ export class MultiplayerClient {
       state: any;
       legalMoves?: Card[];
     }) => {
+      // Extract completed trick from events for display buffering
+      const trickWon = data.events.find((e: any) => e.type === "trick-won") as any;
+
       this.updateState({
-        gameState: data.state,
+        gameState: {
+          ...data.state,
+          _lastCompletedTrick: trickWon?.trick ?? null,
+          _trickWinnerId: trickWon?.winnerId ?? null,
+        },
         myHand: data.state?.myHand ?? [],
         legalMoves: data.legalMoves ?? [],
       });
