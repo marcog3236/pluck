@@ -43,7 +43,7 @@ export default function Home() {
 
   // ── Home screen ──
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+    <div className="safe-screen-min bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
       <motion.div
         className="flex flex-col items-center gap-8"
         initial={{ opacity: 0, y: 20 }}

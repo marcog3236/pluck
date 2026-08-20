@@ -1,6 +1,7 @@
 "use client";
 
-import { PlayingCard } from "./PlayingCard";
+import { PlayingCard, CARD_PX } from "./PlayingCard";
+import { useViewportSize } from "@/hooks/useViewportSize";
 import type { Card } from "@pluck/engine";
 import { cardsEqual, cardId } from "@pluck/engine";
 
@@ -21,24 +22,33 @@ export function PlayerHand({
   selectedCard,
   onSelectCard,
 }: PlayerHandProps) {
+  const { width, isMobile } = useViewportSize();
+
   const isLegal = (card: Card) =>
     legalMoves.some((c) => cardsEqual(c, card));
 
-  // Dynamic overlap: more cards = tighter overlap
-  // Card width is 62px (md size). We want total hand to fit ~900px max.
-  const cardWidth = 56;
-  const maxHandWidth = 820;
+  // Responsive card sizing
+  const cardSize = isMobile ? "md" as const : "md" as const;
+  const cardWidth = CARD_PX[cardSize].w;
+
+  // Available width: viewport minus padding (px-2 on mobile, px-4 on desktop)
+  const pad = isMobile ? 16 : 32;
+  const availableWidth = Math.max(200, (width || 820) - pad);
+  const maxHandWidth = Math.min(availableWidth, 820);
+
   const totalNaturalWidth = cards.length * cardWidth;
   const overlap =
     totalNaturalWidth > maxHandWidth
-      ? Math.max(20, Math.floor(maxHandWidth / cards.length))
-      : cardWidth + 3; // small gap when few cards
+      ? Math.max(isMobile ? 16 : 20, Math.floor(maxHandWidth / cards.length))
+      : cardWidth + 3;
 
-  // Rotation: subtle fan for large hands
-  const maxRotation = cards.length > 10 ? 1.2 : cards.length > 6 ? 0.8 : 0;
+  // Rotation: subtle fan for large hands, less on mobile
+  const maxRotation = isMobile
+    ? (cards.length > 12 ? 0.6 : cards.length > 6 ? 0.4 : 0)
+    : (cards.length > 10 ? 1.2 : cards.length > 6 ? 0.8 : 0);
 
   return (
-    <div className="flex justify-center items-end px-2">
+    <div className="flex justify-center items-end px-1 sm:px-2">
       <div className="flex items-end" style={{ marginLeft: 0 }}>
         {cards.map((card, i) => {
           const legal = isMyTurn && isLegal(card);
@@ -60,7 +70,7 @@ export function PlayerHand({
             >
               <PlayingCard
                 card={card}
-                size="md"
+                size={cardSize}
                 highlighted={legal}
                 selected={!!selected}
                 disabled={!legal}

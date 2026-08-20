@@ -1,7 +1,12 @@
 node_modules/
 dist/
 .next/
+out/
 .turbo/
 *.tsbuildinfo
 .env.local
 .env*.local
+
+# Capacitor iOS build artifacts (keep ios/ in git)
+ios/App/App/public/
+ios/App/Pods/

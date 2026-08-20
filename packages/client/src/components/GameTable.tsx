@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useGame } from "@/hooks/useGame";
+import { useViewportSize } from "@/hooks/useViewportSize";
 import type { GameHandle } from "@/hooks/useMultiplayerGame";
 import { PlayerHand } from "./PlayerHand";
 import { OpponentHand } from "./OpponentHand";
@@ -21,6 +22,7 @@ interface GameTableProps {
 
 export function GameTable({ multiplayerHandle, onBack }: GameTableProps) {
   const solo = useGame({ mode: "three-player", pointsToWin: 10 });
+  const { isMobile } = useViewportSize();
 
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [playerName, setPlayerName] = useState("");
@@ -33,22 +35,22 @@ export function GameTable({ multiplayerHandle, onBack }: GameTableProps) {
   // ── Pre-game lobby (solo only) ──
   if (!isMultiplayer && (!solo.state || solo.state.phase === "waiting")) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+      <div className="safe-screen-min bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center px-4">
         <motion.div
-          className="flex flex-col items-center gap-8"
+          className="flex flex-col items-center gap-6 sm:gap-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="flex flex-col items-center gap-2">
-            <h1 className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-400 to-red-400">
+            <h1 className="text-5xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-400 to-red-400">
               PLUCK
             </h1>
-            <p className="text-slate-400 text-sm tracking-widest uppercase">
+            <p className="text-slate-400 text-xs sm:text-sm tracking-widest uppercase">
               Trick-Taking Card Game
             </p>
           </div>
 
-          <div className="flex flex-col items-center gap-4 bg-slate-800/60 backdrop-blur rounded-2xl p-8 border border-slate-600/50 shadow-2xl w-80">
+          <div className="flex flex-col items-center gap-4 bg-slate-800/60 backdrop-blur rounded-2xl p-6 sm:p-8 border border-slate-600/50 shadow-2xl w-full max-w-80">
             <input
               type="text"
               placeholder="Your name"
@@ -153,10 +155,10 @@ export function GameTable({ multiplayerHandle, onBack }: GameTableProps) {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex flex-col overflow-hidden">
+    <div className="safe-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex flex-col overflow-hidden">
       {/* ── Top bar ── */}
-      <div className="flex items-center justify-between gap-3 px-4 py-2 bg-slate-900/80 border-b border-slate-700/40 flex-shrink-0">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-slate-900/80 border-b border-slate-700/40 flex-shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
           <h1 className="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400 flex-shrink-0">
             PLUCK
           </h1>
@@ -167,21 +169,28 @@ export function GameTable({ multiplayerHandle, onBack }: GameTableProps) {
           )}
         </div>
         <ScoreBoard state={stateProxy as any} />
-        <div className="flex items-center gap-3 flex-shrink-0">
-          <GameStatus state={stateProxy as any} isMyTurn={h.isMyTurn} />
+        <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0">
+          {!isMobile && <GameStatus state={stateProxy as any} isMyTurn={h.isMyTurn} />}
           <button
             onClick={onBack ?? solo.newGame}
-            className="text-[10px] text-slate-500 hover:text-slate-300 transition-colors px-2 py-1 rounded hover:bg-slate-700/50 cursor-pointer whitespace-nowrap"
+            className="text-[10px] text-slate-500 hover:text-slate-300 transition-colors px-1.5 sm:px-2 py-1 rounded hover:bg-slate-700/50 cursor-pointer whitespace-nowrap"
           >
-            {isMultiplayer ? "Leave" : "New Game"}
+            {isMultiplayer ? "Leave" : "New"}
           </button>
         </div>
       </div>
 
+      {/* Mobile-only status bar */}
+      {isMobile && (
+        <div className="flex items-center justify-center px-2 py-1 flex-shrink-0">
+          <GameStatus state={stateProxy as any} isMyTurn={h.isMyTurn} />
+        </div>
+      )}
+
       {/* ── Game area ── */}
-      <div className="flex-1 flex flex-col justify-between min-h-0 px-4">
+      <div className="flex-1 flex flex-col justify-between min-h-0 px-2 sm:px-4">
         {/* Opponents */}
-        <div className="flex justify-center gap-16 pt-2 flex-shrink-0">
+        <div className="flex justify-center gap-6 sm:gap-16 pt-1 sm:pt-2 flex-shrink-0">
           {opponents.map((opp: any, i: number) => (
             <OpponentHand
               key={opp.id}
@@ -201,19 +210,19 @@ export function GameTable({ multiplayerHandle, onBack }: GameTableProps) {
             <TrumpSelector onSelect={h.declareTrump} />
           ) : h.phase === "finished" ? (
             <motion.div
-              className="flex flex-col items-center gap-4"
+              className="flex flex-col items-center gap-3 sm:gap-4"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
             >
-              <div className="text-5xl">
+              <div className="text-4xl sm:text-5xl">
                 {h.winnerId === myId ? "🏆" : "😔"}
               </div>
-              <h2 className="text-2xl font-bold text-slate-100">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-100">
                 {h.winnerId === myId
                   ? "You Won!"
                   : `${h.players.find((p: any) => p.id === h.winnerId)?.name} Won`}
               </h2>
-              <div className="text-slate-400 text-sm">
+              <div className="text-slate-400 text-xs sm:text-sm text-center">
                 Final scores:{" "}
                 {h.players
                   .map((p: any) => `${p.name}: ${h.scores[p.id] ?? 0}`)
@@ -221,7 +230,7 @@ export function GameTable({ multiplayerHandle, onBack }: GameTableProps) {
               </div>
               <motion.button
                 onClick={onBack ?? solo.newGame}
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 font-bold hover:from-amber-400 hover:to-orange-400 cursor-pointer"
+                className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 font-bold hover:from-amber-400 hover:to-orange-400 cursor-pointer"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -239,30 +248,30 @@ export function GameTable({ multiplayerHandle, onBack }: GameTableProps) {
         </div>
 
         {/* Player info */}
-        <div className="flex justify-center items-center gap-3 flex-shrink-0 pb-1">
+        <div className="flex justify-center items-center gap-2 sm:gap-3 flex-shrink-0 pb-0.5 sm:pb-1">
           {h.phase === "plucking" && h.isMyTurn && (
-            <span className="text-[11px] text-amber-400 font-medium bg-amber-900/30 px-2.5 py-0.5 rounded-full border border-amber-500/30">
-              Choose a card to give (pluck)
+            <span className="text-sm text-amber-400 font-medium bg-amber-900/30 px-3 py-1 rounded-full border border-amber-500/30">
+              {isMobile ? "Pluck a card" : "Choose a card to give (pluck)"}
             </span>
           )}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-900/30 border border-indigo-500/20">
-            <div className="w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center text-[10px] font-bold text-white">
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-900/30 border border-indigo-500/20">
+            <div className="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-xs font-bold text-white">
               {humanPlayer?.name?.[0] ?? "Y"}
             </div>
-            <span className="text-xs text-slate-200 font-medium">
+            <span className="text-sm text-slate-200 font-medium">
               {humanPlayer?.name ?? "You"}
             </span>
-            <span className="text-[10px] text-slate-400 tabular-nums">
+            <span className="text-sm text-slate-400 tabular-nums">
               {h.tricksWon[myId] ?? 0}/{humanQuota}
             </span>
             {isDealer && (
-              <span className="text-[9px] text-amber-400 font-bold">DEALER</span>
+              <span className="text-xs text-amber-400 font-bold">DEALER</span>
             )}
           </div>
         </div>
 
         {/* Player hand */}
-        <div className="flex-shrink-0 pb-4">
+        <div className="flex-shrink-0 pb-2 sm:pb-4">
           <PlayerHand
             cards={h.hand}
             legalMoves={

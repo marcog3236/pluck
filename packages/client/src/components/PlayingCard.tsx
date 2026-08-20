@@ -24,17 +24,27 @@ interface PlayingCardProps {
   highlighted?: boolean;
   selected?: boolean;
   faceDown?: boolean;
-  size?: "xs" | "sm" | "md" | "lg";
+  size?: "2xs" | "xs" | "sm" | "md" | "lg";
   className?: string;
   animate?: boolean;
   layoutId?: string;
 }
 
 const SIZE_CONFIG = {
-  xs: { w: "w-10", h: "h-14", rank: "text-[9px]", suit: "text-xs", center: "text-lg", corner: "top-px left-0.5", cornerB: "bottom-px right-0.5", gap: "-mt-px", radius: "rounded" },
-  sm: { w: "w-[50px]", h: "h-[70px]", rank: "text-[11px]", suit: "text-sm", center: "text-xl", corner: "top-0.5 left-1", cornerB: "bottom-0.5 right-1", gap: "-mt-px", radius: "rounded" },
-  md: { w: "w-[56px]", h: "h-[80px]", rank: "text-xs", suit: "text-base", center: "text-2xl", corner: "top-0.5 left-1", cornerB: "bottom-0.5 right-1", gap: "-mt-px", radius: "rounded" },
-  lg: { w: "w-[72px]", h: "h-[104px]", rank: "text-sm", suit: "text-lg", center: "text-3xl", corner: "top-1 left-1.5", cornerB: "bottom-1 right-1.5", gap: "-mt-0.5", radius: "rounded-md" },
+  "2xs": { w: "w-8", h: "h-11", rank: "text-[7px]", suit: "text-[9px]", center: "text-sm", corner: "top-px left-px", cornerB: "bottom-px right-px", gap: "-mt-px", radius: "rounded-sm", liftY: -8 },
+  xs: { w: "w-10", h: "h-14", rank: "text-[9px]", suit: "text-xs", center: "text-lg", corner: "top-px left-0.5", cornerB: "bottom-px right-0.5", gap: "-mt-px", radius: "rounded", liftY: -10 },
+  sm: { w: "w-[50px]", h: "h-[70px]", rank: "text-[11px]", suit: "text-sm", center: "text-xl", corner: "top-0.5 left-1", cornerB: "bottom-0.5 right-1", gap: "-mt-px", radius: "rounded", liftY: -12 },
+  md: { w: "w-[56px]", h: "h-[80px]", rank: "text-xs", suit: "text-base", center: "text-2xl", corner: "top-0.5 left-1", cornerB: "bottom-0.5 right-1", gap: "-mt-px", radius: "rounded", liftY: -14 },
+  lg: { w: "w-[72px]", h: "h-[104px]", rank: "text-sm", suit: "text-lg", center: "text-3xl", corner: "top-1 left-1.5", cornerB: "bottom-1 right-1.5", gap: "-mt-0.5", radius: "rounded-md", liftY: -18 },
+};
+
+/** Pixel widths for JS calculations (matches Tailwind classes above) */
+export const CARD_PX = {
+  "2xs": { w: 32, h: 44 },
+  xs: { w: 40, h: 56 },
+  sm: { w: 50, h: 70 },
+  md: { w: 56, h: 80 },
+  lg: { w: 72, h: 104 },
 };
 
 export function PlayingCard({
@@ -87,7 +97,7 @@ export function PlayingCard({
           ${className}
         `}
         initial={animate ? { scale: 0.9, opacity: 0, y: 10 } : false}
-        animate={{ scale: 1, opacity: 1, y: selected ? -14 : 0 }}
+        animate={{ scale: 1, opacity: 1, y: selected ? s.liftY : 0 }}
         whileHover={!disabled ? { y: -6, transition: { duration: 0.15 } } : undefined}
         transition={{ type: "spring", stiffness: 400, damping: 28 }}
       >
@@ -119,7 +129,7 @@ export function PlayingCard({
       `}
       style={{ color }}
       initial={animate ? { scale: 0.9, opacity: 0, y: 10 } : false}
-      animate={{ scale: 1, opacity: 1, y: selected ? -14 : 0 }}
+      animate={{ scale: 1, opacity: 1, y: selected ? s.liftY : 0 }}
       whileHover={!disabled ? { y: -6, transition: { duration: 0.15 } } : undefined}
       transition={{ type: "spring", stiffness: 400, damping: 28 }}
     >
@@ -148,7 +158,7 @@ export function CardBack({
   size = "xs",
   className = "",
 }: {
-  size?: "xs" | "sm" | "md" | "lg";
+  size?: "2xs" | "xs" | "sm" | "md" | "lg";
   className?: string;
 }) {
   const s = SIZE_CONFIG[size];
