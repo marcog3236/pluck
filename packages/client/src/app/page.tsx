@@ -80,6 +80,7 @@ export default function Home() {
           <p className="text-xs text-slate-500 text-center mt-2">
             3-player trick-taking · First to 10 points wins
           </p>
+          <p className="text-[10px] text-slate-700 mt-4">v0.2.0</p>
         </div>
       </motion.div>
     </div>
