@@ -35,52 +35,42 @@ export function useGame(config: Partial<GameConfig> = {}): UseGameReturn {
     return controllerRef.current;
   }, []);
 
+  const handleEvents = useCallback((events: GameEvent[], ctrl: GameController) => {
+    setLastEvents(events);
+
+    const trickWon = events.find((e) => e.type === "trick-won");
+    if (trickWon && trickWon.type === "trick-won") {
+      setCompletedTrick((trickWon as any).trick);
+      setTrickWinner(trickWon.winnerId);
+
+      if (completedTrickTimer.current) clearTimeout(completedTrickTimer.current);
+      completedTrickTimer.current = setTimeout(() => {
+        setCompletedTrick(null);
+        setTrickWinner(null);
+      }, 1800);
+    }
+
+    setState({ ...ctrl.state });
+  }, []);
+
   // Set up event handler
   useEffect(() => {
     const ctrl = getController();
-    const unsub = ctrl.onEvent((events) => {
-      setLastEvents(events);
-
-      // Capture trick-won: freeze the completed trick for display
-      const trickWon = events.find((e) => e.type === "trick-won");
-      if (trickWon && trickWon.type === "trick-won") {
-        // Save the completed trick BEFORE engine clears it
-        setCompletedTrick(trickWon.trick);
-        setTrickWinner(trickWon.winnerId);
-
-        // Clear after delay
-        if (completedTrickTimer.current) clearTimeout(completedTrickTimer.current);
-        completedTrickTimer.current = setTimeout(() => {
-          setCompletedTrick(null);
-          setTrickWinner(null);
-        }, 1800);
-      }
-
-      setState({ ...ctrl.state });
-    });
+    const unsub = ctrl.onEvent((events) => handleEvents(events, ctrl));
     return unsub;
-  }, [getController]);
+  }, [getController, handleEvents]);
 
   const startGame = useCallback(
     (name: string, difficulty?: AIDifficulty) => {
       if (difficulty) {
         controllerRef.current = new GameController(config, difficulty);
-        const ctrl = controllerRef.current;
-        ctrl.onEvent((events) => {
-          setLastEvents(events);
-          setState({ ...ctrl.state });
-          const trickWon = events.find((e) => e.type === "trick-won");
-          if (trickWon && trickWon.type === "trick-won") {
-            setTrickWinner(trickWon.winnerId);
-            setTimeout(() => setTrickWinner(null), 1200);
-          }
-        });
       }
       const ctrl = controllerRef.current ?? getController(difficulty);
+      ctrl.onEvent((events) => handleEvents(events, ctrl));
       ctrl.startGame(name);
       setState({ ...ctrl.state });
     },
-    [getController, config]
+    [getController, config, handleEvents]
   );
 
   const playCard = useCallback(
@@ -110,18 +100,11 @@ export function useGame(config: Partial<GameConfig> = {}): UseGameReturn {
   const newGame = useCallback(() => {
     controllerRef.current = new GameController(config);
     const ctrl = controllerRef.current;
-    ctrl.onEvent((events) => {
-      setLastEvents(events);
-      setState({ ...ctrl.state });
-      const trickWon = events.find((e) => e.type === "trick-won");
-      if (trickWon && trickWon.type === "trick-won") {
-        setTrickWinner(trickWon.winnerId);
-        setTimeout(() => setTrickWinner(null), 1200);
-      }
-    });
+    ctrl.onEvent((events) => handleEvents(events, ctrl));
     setState(null);
     setLastEvents([]);
     setTrickWinner(null);
+    setCompletedTrick(null);
   }, [config]);
 
   const ctrl = controllerRef.current;
